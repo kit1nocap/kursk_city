@@ -6,6 +6,7 @@ const datasetUrl = new URL(
   "../data/kursk_apartments_cian_snapshot.json",
   import.meta.url,
 );
+const estimatorPageUrl = new URL("../app/page.tsx", import.meta.url);
 
 async function loadDataset() {
   return JSON.parse(await readFile(datasetUrl, "utf8"));
@@ -52,4 +53,23 @@ test("dataset values pass basic domain checks", async () => {
     assert.ok(Number.isInteger(totalFloors) && totalFloors >= floor);
     assert.ok(Number.isInteger(price) && price >= 500_000);
   }
+});
+
+test("estimator exposes the additional property characteristics", async () => {
+  const page = await readFile(estimatorPageUrl, "utf8");
+  const expectedControls = [
+    "Год постройки",
+    "Тип постройки",
+    "Индивидуальное отопление",
+    "Чистовая отделка",
+    "White box",
+    "С ремонтом",
+  ];
+
+  for (const label of expectedControls) {
+    assert.ok(page.includes(label), `Missing estimator control: ${label}`);
+  }
+
+  assert.ok(page.includes("propertyAdjustments"));
+  assert.ok(page.includes("Корректировки характеристик"));
 });

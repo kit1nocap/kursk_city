@@ -10,6 +10,8 @@ import {
 
 type District = KurskListing["district"];
 type ListingKind = KurskListing["listingKind"];
+type BuildingType = "Кирпичный" | "Панельный" | "Монолитный" | "Блочный";
+type FinishType = "Чистовая отделка" | "White box" | "С ремонтом";
 
 type EstimateInput = {
   address: string;
@@ -19,12 +21,21 @@ type EstimateInput = {
   area: number;
   floor: number;
   totalFloors: number;
+  buildingYear: number;
+  buildingType: BuildingType;
+  individualHeating: boolean;
+  finishType: FinishType;
 };
 
 type ComparableInfo = {
   rate: number;
   count: number;
   level: "дом" | "район и тип рынка" | "район" | "весь датасет";
+};
+
+type PriceAdjustment = {
+  label: string;
+  rate: number;
 };
 
 type ModelMetrics = {
@@ -50,6 +61,17 @@ const DISTRICTS: District[] = [
 ];
 
 const LISTING_KINDS: ListingKind[] = ["Вторичка", "Новостройка"];
+const BUILDING_TYPES: BuildingType[] = [
+  "Кирпичный",
+  "Панельный",
+  "Монолитный",
+  "Блочный",
+];
+const FINISH_TYPES: FinishType[] = [
+  "Чистовая отделка",
+  "White box",
+  "С ремонтом",
+];
 
 const INITIAL_INPUT: EstimateInput = {
   address: "проспект Анатолия Дериглазова, 91",
@@ -59,6 +81,10 @@ const INITIAL_INPUT: EstimateInput = {
   area: 37.5,
   floor: 13,
   totalFloors: 17,
+  buildingYear: 2018,
+  buildingType: "Монолитный",
+  individualHeating: true,
+  finishType: "С ремонтом",
 };
 
 const FEATURE_LABELS = [
@@ -93,6 +119,40 @@ function formatCompactPrice(value: number) {
 
 function mean(values: number[]) {
   return values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
+}
+
+function propertyAdjustments(input: EstimateInput): PriceAdjustment[] {
+  const yearRate = Math.min(
+    0.06,
+    Math.max(-0.06, (input.buildingYear - 2000) * 0.0015),
+  );
+  const buildingTypeRates: Record<BuildingType, number> = {
+    Кирпичный: 0.02,
+    Панельный: -0.015,
+    Монолитный: 0.04,
+    Блочный: -0.01,
+  };
+  const finishRates: Record<FinishType, number> = {
+    "Чистовая отделка": 0.01,
+    "White box": -0.06,
+    "С ремонтом": 0.08,
+  };
+
+  return [
+    { label: `Год постройки: ${input.buildingYear}`, rate: yearRate },
+    {
+      label: `Тип дома: ${input.buildingType.toLocaleLowerCase("ru-RU")}`,
+      rate: buildingTypeRates[input.buildingType],
+    },
+    {
+      label: "Индивидуальное отопление",
+      rate: input.individualHeating ? 0.04 : 0,
+    },
+    {
+      label: `Отделка: ${input.finishType.toLocaleLowerCase("ru-RU")}`,
+      rate: finishRates[input.finishType],
+    },
+  ];
 }
 
 function comparableInfo(
@@ -307,7 +367,16 @@ export default function HomePage() {
   }, [form.address]);
 
   const currentBenchmark = comparableInfo(estimateInput, KURSK_LISTINGS);
-  const estimatedPrice = model.predict(estimateInput);
+  const baseEstimatedPrice = model.predict(estimateInput);
+  const priceAdjustments = propertyAdjustments(estimateInput);
+  const adjustmentRate = priceAdjustments.reduce(
+    (sum, adjustment) => sum + adjustment.rate,
+    0,
+  );
+  const estimatedPrice = Math.max(
+    650_000,
+    baseEstimatedPrice * (1 + adjustmentRate),
+  );
   const intervalSize = Math.max(model.residualStd, estimatedPrice * 0.1);
   const lowerEstimate = Math.max(500_000, estimatedPrice - intervalSize);
   const upperEstimate = estimatedPrice + intervalSize;
@@ -428,7 +497,8 @@ export default function HomePage() {
                 <strong>{estimateInput.address}</strong>
                 <span>
                   {estimateInput.rooms}-комн. · {estimateInput.area} м² ·{" "}
-                  {estimateInput.floor}/{estimateInput.totalFloors} этаж
+                  {estimateInput.floor}/{estimateInput.totalFloors} этаж ·{" "}
+                  {estimateInput.buildingYear} г.
                 </span>
               </div>
             </div>
@@ -614,6 +684,83 @@ export default function HomePage() {
                 />
               </div>
 
+              <div className="field">
+                <label htmlFor="building-year">Год постройки</label>
+                <input
+                  id="building-year"
+                  type="number"
+                  min="1900"
+                  max="2026"
+                  value={form.buildingYear}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      buildingYear: numericInput(
+                        event.target.value,
+                        2000,
+                        1900,
+                        2026,
+                      ),
+                    }))
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="building-type">Тип постройки</label>
+                <select
+                  id="building-type"
+                  value={form.buildingType}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      buildingType: event.target.value as BuildingType,
+                    }))
+                  }
+                >
+                  {BUILDING_TYPES.map((buildingType) => (
+                    <option key={buildingType}>{buildingType}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="individual-heating">
+                  Индивидуальное отопление
+                </label>
+                <select
+                  id="individual-heating"
+                  value={form.individualHeating ? "Да" : "Нет"}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      individualHeating: event.target.value === "Да",
+                    }))
+                  }
+                >
+                  <option>Да</option>
+                  <option>Нет</option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label htmlFor="finish-type">Отделка</label>
+                <select
+                  id="finish-type"
+                  value={form.finishType}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      finishType: event.target.value as FinishType,
+                    }))
+                  }
+                >
+                  {FINISH_TYPES.map((finishType) => (
+                    <option key={finishType}>{finishType}</option>
+                  ))}
+                </select>
+              </div>
+
               <button className="button primary calculate" type="submit">
                 Рассчитать стоимость
               </button>
@@ -622,7 +769,7 @@ export default function HomePage() {
             <aside className="result-card" key={estimatedPrice}>
               <div className="result-topline">
                 <span>Оценка модели</span>
-                <span className="result-badge">Ridge + аналоги</span>
+                <span className="result-badge">Ridge + корректировки</span>
               </div>
               <p className="result-label">Ориентировочная стоимость</p>
               <div className="result-price">{formatPrice(estimatedPrice)}</div>
@@ -657,11 +804,33 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+              <div className="influence property-adjustments">
+                <p>Корректировки характеристик</p>
+                {priceAdjustments.map((adjustment) => (
+                  <div className="influence-row" key={adjustment.label}>
+                    <span>{adjustment.label}</span>
+                    <strong
+                      className={adjustment.rate >= 0 ? "positive" : "negative"}
+                    >
+                      {adjustment.rate >= 0 ? "+" : "−"}
+                      {Math.abs(adjustment.rate * 100).toLocaleString("ru-RU", {
+                        maximumFractionDigits: 1,
+                      })}
+                      % ·{" "}
+                      {formatCompactPrice(
+                        Math.abs(baseEstimatedPrice * adjustment.rate),
+                      )}
+                    </strong>
+                  </div>
+                ))}
+              </div>
               <div className="result-note">
                 <span>i</span>
                 <p>
-                  Это исследовательская оценка по ценам объявлений, а не
-                  заключение оценщика и не гарантированная цена сделки.
+                  Базовую цену рассчитывает Ridge-модель по объявлениям.
+                  Характеристики дома и отделки применяются как прозрачные
+                  сценарные корректировки. Результат не является заключением
+                  оценщика или гарантированной ценой сделки.
                 </p>
               </div>
             </aside>
