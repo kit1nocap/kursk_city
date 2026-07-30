@@ -61,9 +61,15 @@ test("estimator exposes the additional property characteristics", async () => {
     "Год постройки",
     "Тип постройки",
     "Индивидуальное отопление",
-    "Чистовая отделка",
+    "Кирпично-монолитный",
+    "Деревянный",
+    "Без отделки",
     "White box",
     "С ремонтом",
+    "Класс ремонта",
+    "Бизнес",
+    "Комфорт",
+    "Эконом",
   ];
 
   for (const label of expectedControls) {

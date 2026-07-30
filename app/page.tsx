@@ -10,8 +10,15 @@ import {
 
 type District = KurskListing["district"];
 type ListingKind = KurskListing["listingKind"];
-type BuildingType = "Кирпичный" | "Панельный" | "Монолитный" | "Блочный";
-type FinishType = "Чистовая отделка" | "White box" | "С ремонтом";
+type BuildingType =
+  | "Кирпичный"
+  | "Панельный"
+  | "Монолитный"
+  | "Кирпично-монолитный"
+  | "Блочный"
+  | "Деревянный";
+type FinishType = "Без отделки" | "White box" | "С ремонтом";
+type RepairClass = "Бизнес" | "Комфорт" | "Эконом";
 
 type EstimateInput = {
   address: string;
@@ -25,6 +32,7 @@ type EstimateInput = {
   buildingType: BuildingType;
   individualHeating: boolean;
   finishType: FinishType;
+  repairClass: RepairClass;
 };
 
 type ComparableInfo = {
@@ -65,13 +73,16 @@ const BUILDING_TYPES: BuildingType[] = [
   "Кирпичный",
   "Панельный",
   "Монолитный",
+  "Кирпично-монолитный",
   "Блочный",
+  "Деревянный",
 ];
 const FINISH_TYPES: FinishType[] = [
-  "Чистовая отделка",
+  "Без отделки",
   "White box",
   "С ремонтом",
 ];
+const REPAIR_CLASSES: RepairClass[] = ["Бизнес", "Комфорт", "Эконом"];
 
 const INITIAL_INPUT: EstimateInput = {
   address: "проспект Анатолия Дериглазова, 91",
@@ -85,6 +96,7 @@ const INITIAL_INPUT: EstimateInput = {
   buildingType: "Монолитный",
   individualHeating: true,
   finishType: "С ремонтом",
+  repairClass: "Комфорт",
 };
 
 const FEATURE_LABELS = [
@@ -130,13 +142,27 @@ function propertyAdjustments(input: EstimateInput): PriceAdjustment[] {
     Кирпичный: 0.02,
     Панельный: -0.015,
     Монолитный: 0.04,
+    "Кирпично-монолитный": 0.03,
     Блочный: -0.01,
+    Деревянный: -0.08,
   };
-  const finishRates: Record<FinishType, number> = {
-    "Чистовая отделка": 0.01,
-    "White box": -0.06,
-    "С ремонтом": 0.08,
+  const finishRates: Record<Exclude<FinishType, "С ремонтом">, number> = {
+    "Без отделки": -0.09,
+    "White box": -0.04,
   };
+  const repairClassRates: Record<RepairClass, number> = {
+    Бизнес: 0.15,
+    Комфорт: 0.08,
+    Эконом: 0.03,
+  };
+  const finishRate =
+    input.finishType === "С ремонтом"
+      ? repairClassRates[input.repairClass]
+      : finishRates[input.finishType];
+  const finishLabel =
+    input.finishType === "С ремонтом"
+      ? `Отделка: ремонт класса ${input.repairClass.toLocaleLowerCase("ru-RU")}`
+      : `Отделка: ${input.finishType.toLocaleLowerCase("ru-RU")}`;
 
   return [
     { label: `Год постройки: ${input.buildingYear}`, rate: yearRate },
@@ -149,8 +175,8 @@ function propertyAdjustments(input: EstimateInput): PriceAdjustment[] {
       rate: input.individualHeating ? 0.04 : 0,
     },
     {
-      label: `Отделка: ${input.finishType.toLocaleLowerCase("ru-RU")}`,
-      rate: finishRates[input.finishType],
+      label: finishLabel,
+      rate: finishRate,
     },
   ];
 }
@@ -760,6 +786,26 @@ export default function HomePage() {
                   ))}
                 </select>
               </div>
+
+              {form.finishType === "С ремонтом" && (
+                <div className="field">
+                  <label htmlFor="repair-class">Класс ремонта</label>
+                  <select
+                    id="repair-class"
+                    value={form.repairClass}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        repairClass: event.target.value as RepairClass,
+                      }))
+                    }
+                  >
+                    {REPAIR_CLASSES.map((repairClass) => (
+                      <option key={repairClass}>{repairClass}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <button className="button primary calculate" type="submit">
                 Рассчитать стоимость
