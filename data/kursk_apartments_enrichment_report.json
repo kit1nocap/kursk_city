@@ -1,0 +1,943 @@
+{
+  "generatedAt": "2026-07-30T18:59:56.385Z",
+  "sourceRows": 250,
+  "fetchedRows": 250,
+  "completeRows": 102,
+  "coverage": {
+    "buildingYear": 246,
+    "buildingType": 216,
+    "individualHeating": 121,
+    "finishType": 230,
+    "repairClass": 250
+  },
+  "failed": [],
+  "incomplete": [
+    {
+      "id": 295762485,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 295762492,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 295762494,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 295762496,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 312354418,
+      "missing": [
+        "buildingType",
+        "finishType"
+      ]
+    },
+    {
+      "id": 317246481,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 317246492,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 317246496,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225279,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225290,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225315,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225366,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225378,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225418,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225452,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225468,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320225490,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320382527,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320382529,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320382641,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320382643,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320382650,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320382766,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320382829,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320383012,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320383506,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 320964344,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 321363260,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 321992826,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 321992849,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 322557916,
+      "missing": [
+        "buildingYear",
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 322574697,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 323773337,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 324616775,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 324963045,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325083399,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103432,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103440,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103455,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103457,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103460,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103527,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103577,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103640,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325103667,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325173991,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325174104,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325383872,
+      "missing": [
+        "buildingYear",
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 325689900,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326167802,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 326206202,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326269999,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326618751,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326645372,
+      "missing": [
+        "buildingYear",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326680145,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326680148,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326680150,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326748587,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326761774,
+      "missing": [
+        "individualHeating",
+        "finishType"
+      ]
+    },
+    {
+      "id": 326777788,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326777810,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326777850,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326777852,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326777858,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 326938185,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 327001903,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 327003149,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 327004264,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 327012156,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 327466823,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 327653346,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 327991992,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 328198421,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198501,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198522,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198524,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198537,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198691,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198708,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198901,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198977,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198983,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328198992,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 328353770,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 328362696,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 328872491,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 329105104,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329259668,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329336870,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337051,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337056,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337065,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337243,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337367,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337368,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337432,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329337493,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329365059,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329490340,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329498445,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 329527817,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329665107,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 329796130,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796247,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796348,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796396,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796420,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796440,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796449,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796455,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796523,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329796550,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 329904496,
+      "missing": [
+        "buildingYear",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330022005,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 330059522,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 330400537,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330436546,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330443107,
+      "missing": [
+        "buildingType",
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330547448,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330789029,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330887299,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330887352,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330887626,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 330930289,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331001218,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 331082265,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331082286,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331082288,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331082293,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331082295,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331082301,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331194636,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331194641,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331194659,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331212536,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331337015,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331337018,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331337020,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331337059,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331337060,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331337094,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331364853,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 331541663,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 331837961,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 331887526,
+      "missing": [
+        "finishType"
+      ]
+    },
+    {
+      "id": 331893033,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 332062541,
+      "missing": [
+        "individualHeating"
+      ]
+    },
+    {
+      "id": 332283545,
+      "missing": [
+        "finishType"
+      ]
+    }
+  ]
+}

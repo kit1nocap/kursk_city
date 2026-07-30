@@ -2,23 +2,17 @@
 
 import { useMemo, useState } from "react";
 import {
+  type BuildingType,
   DATASET_META,
+  type FinishType,
   KURSK_ADDRESSES,
   KURSK_LISTINGS,
   type KurskListing,
+  type RepairClass,
 } from "./kurskListings";
 
 type District = KurskListing["district"];
 type ListingKind = KurskListing["listingKind"];
-type BuildingType =
-  | "Кирпичный"
-  | "Панельный"
-  | "Монолитный"
-  | "Кирпично-монолитный"
-  | "Блочный"
-  | "Деревянный";
-type FinishType = "Без отделки" | "White box" | "С ремонтом";
-type RepairClass = "Бизнес" | "Комфорт" | "Эконом";
 
 type EstimateInput = {
   address: string;
@@ -39,11 +33,6 @@ type ComparableInfo = {
   rate: number;
   count: number;
   level: "дом" | "район и тип рынка" | "район" | "весь датасет";
-};
-
-type PriceAdjustment = {
-  label: string;
-  rate: number;
 };
 
 type ModelMetrics = {
@@ -109,6 +98,25 @@ const FEATURE_LABELS = [
   "Сеймский район",
   "Железнодорожный район",
   "Новостройка",
+  "Год постройки",
+  "Год не указан",
+  "Кирпичный дом",
+  "Панельный дом",
+  "Монолитный дом",
+  "Кирпично-монолитный дом",
+  "Блочный дом",
+  "Деревянный дом",
+  "Тип дома не указан",
+  "Индивидуальное отопление",
+  "Отопление не указано",
+  "Без отделки",
+  "White box",
+  "С ремонтом",
+  "Отделка не указана",
+  "Ремонт бизнес-класса",
+  "Ремонт комфорт-класса",
+  "Ремонт эконом-класса",
+  "Класс ремонта не указан",
 ];
 
 function normalizeAddress(value: string) {
@@ -131,54 +139,6 @@ function formatCompactPrice(value: number) {
 
 function mean(values: number[]) {
   return values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
-}
-
-function propertyAdjustments(input: EstimateInput): PriceAdjustment[] {
-  const yearRate = Math.min(
-    0.06,
-    Math.max(-0.06, (input.buildingYear - 2000) * 0.0015),
-  );
-  const buildingTypeRates: Record<BuildingType, number> = {
-    Кирпичный: 0.02,
-    Панельный: -0.015,
-    Монолитный: 0.04,
-    "Кирпично-монолитный": 0.03,
-    Блочный: -0.01,
-    Деревянный: -0.08,
-  };
-  const finishRates: Record<Exclude<FinishType, "С ремонтом">, number> = {
-    "Без отделки": -0.09,
-    "White box": -0.04,
-  };
-  const repairClassRates: Record<RepairClass, number> = {
-    Бизнес: 0.15,
-    Комфорт: 0.08,
-    Эконом: 0.03,
-  };
-  const finishRate =
-    input.finishType === "С ремонтом"
-      ? repairClassRates[input.repairClass]
-      : finishRates[input.finishType];
-  const finishLabel =
-    input.finishType === "С ремонтом"
-      ? `Отделка: ремонт класса ${input.repairClass.toLocaleLowerCase("ru-RU")}`
-      : `Отделка: ${input.finishType.toLocaleLowerCase("ru-RU")}`;
-
-  return [
-    { label: `Год постройки: ${input.buildingYear}`, rate: yearRate },
-    {
-      label: `Тип дома: ${input.buildingType.toLocaleLowerCase("ru-RU")}`,
-      rate: buildingTypeRates[input.buildingType],
-    },
-    {
-      label: "Индивидуальное отопление",
-      rate: input.individualHeating ? 0.04 : 0,
-    },
-    {
-      label: finishLabel,
-      rate: finishRate,
-    },
-  ];
 }
 
 function comparableInfo(
@@ -227,6 +187,15 @@ function featureVector(
   excludeId?: number,
 ) {
   const benchmark = comparableInfo(input, pool, excludeId);
+  const knownYears = pool
+    .map((row) => row.buildingYear)
+    .filter((value): value is number => value !== null);
+  const referenceYear = mean(knownYears);
+  const buildingYear = input.buildingYear ?? referenceYear;
+  const buildingType = input.buildingType;
+  const finishType = input.finishType;
+  const repairClass = input.repairClass;
+
   return [
     input.area,
     input.rooms,
@@ -237,6 +206,16 @@ function featureVector(
     input.district === "Сеймский" ? 1 : 0,
     input.district === "Железнодорожный" ? 1 : 0,
     input.listingKind === "Новостройка" ? 1 : 0,
+    buildingYear,
+    input.buildingYear === null ? 1 : 0,
+    ...BUILDING_TYPES.map((type) => (buildingType === type ? 1 : 0)),
+    buildingType === null ? 1 : 0,
+    input.individualHeating === true ? 1 : 0,
+    input.individualHeating === null ? 1 : 0,
+    ...FINISH_TYPES.map((type) => (finishType === type ? 1 : 0)),
+    finishType === null ? 1 : 0,
+    ...REPAIR_CLASSES.map((type) => (repairClass === type ? 1 : 0)),
+    finishType === "С ремонтом" && repairClass === null ? 1 : 0,
   ];
 }
 
@@ -393,16 +372,7 @@ export default function HomePage() {
   }, [form.address]);
 
   const currentBenchmark = comparableInfo(estimateInput, KURSK_LISTINGS);
-  const baseEstimatedPrice = model.predict(estimateInput);
-  const priceAdjustments = propertyAdjustments(estimateInput);
-  const adjustmentRate = priceAdjustments.reduce(
-    (sum, adjustment) => sum + adjustment.rate,
-    0,
-  );
-  const estimatedPrice = Math.max(
-    650_000,
-    baseEstimatedPrice * (1 + adjustmentRate),
-  );
+  const estimatedPrice = model.predict(estimateInput);
   const intervalSize = Math.max(model.residualStd, estimatedPrice * 0.1);
   const lowerEstimate = Math.max(500_000, estimatedPrice - intervalSize);
   const upperEstimate = estimatedPrice + intervalSize;
@@ -414,8 +384,9 @@ export default function HomePage() {
         model.featureScales[index]) *
       model.weights[index],
   }))
+    .filter((item) => !item.label.includes("не указан"))
     .sort((left, right) => Math.abs(right.value) - Math.abs(left.value))
-    .slice(0, 4);
+    .slice(0, 5);
 
   const uniqueAddressCount = KURSK_ADDRESSES.length;
 
@@ -435,6 +406,21 @@ export default function HomePage() {
             area: exact.area,
             floor: exact.floor,
             totalFloors: exact.totalFloors,
+            ...(exact.buildingYear !== null
+              ? { buildingYear: exact.buildingYear }
+              : {}),
+            ...(exact.buildingType !== null
+              ? { buildingType: exact.buildingType }
+              : {}),
+            ...(exact.individualHeating !== null
+              ? { individualHeating: exact.individualHeating }
+              : {}),
+            ...(exact.finishType !== null
+              ? { finishType: exact.finishType }
+              : {}),
+            ...(exact.repairClass !== null
+              ? { repairClass: exact.repairClass }
+              : {}),
           }
         : {}),
     }));
@@ -716,7 +702,7 @@ export default function HomePage() {
                   id="building-year"
                   type="number"
                   min="1900"
-                  max="2026"
+                  max="2035"
                   value={form.buildingYear}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -725,7 +711,7 @@ export default function HomePage() {
                         event.target.value,
                         2000,
                         1900,
-                        2026,
+                        2035,
                       ),
                     }))
                   }
@@ -815,7 +801,7 @@ export default function HomePage() {
             <aside className="result-card" key={estimatedPrice}>
               <div className="result-topline">
                 <span>Оценка модели</span>
-                <span className="result-badge">Ridge + корректировки</span>
+                <span className="result-badge">Ridge · 28 признаков</span>
               </div>
               <p className="result-label">Ориентировочная стоимость</p>
               <div className="result-price">{formatPrice(estimatedPrice)}</div>
@@ -850,32 +836,13 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <div className="influence property-adjustments">
-                <p>Корректировки характеристик</p>
-                {priceAdjustments.map((adjustment) => (
-                  <div className="influence-row" key={adjustment.label}>
-                    <span>{adjustment.label}</span>
-                    <strong
-                      className={adjustment.rate >= 0 ? "positive" : "negative"}
-                    >
-                      {adjustment.rate >= 0 ? "+" : "−"}
-                      {Math.abs(adjustment.rate * 100).toLocaleString("ru-RU", {
-                        maximumFractionDigits: 1,
-                      })}
-                      % ·{" "}
-                      {formatCompactPrice(
-                        Math.abs(baseEstimatedPrice * adjustment.rate),
-                      )}
-                    </strong>
-                  </div>
-                ))}
-              </div>
               <div className="result-note">
                 <span>i</span>
                 <p>
-                  Базовую цену рассчитывает Ridge-модель по объявлениям.
-                  Характеристики дома и отделки применяются как прозрачные
-                  сценарные корректировки. Результат не является заключением
+                  Год, конструкция дома, отопление, отделка и класс ремонта
+                  входят непосредственно в признаки Ridge-модели. Пропуски в
+                  исходных объявлениях кодируются отдельно и не заменяются
+                  вымышленными значениями. Результат не является заключением
                   оценщика или гарантированной ценой сделки.
                 </p>
               </div>

@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 import joblib
+import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
@@ -19,12 +20,26 @@ from sklearn.preprocessing import OneHotEncoder
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATASET = (
-    PROJECT_ROOT / "data" / "kursk_apartments_cian_snapshot.json"
+    PROJECT_ROOT / "data" / "kursk_apartments_enriched_all.json"
 )
 DEFAULT_OUTPUT = PROJECT_ROOT / "ml" / "artifacts" / "model.joblib"
 
-NUMERIC_FEATURES = ["rooms", "area", "floor", "total_floors"]
-CATEGORICAL_FEATURES = ["district", "listing_kind", "address"]
+NUMERIC_FEATURES = [
+    "rooms",
+    "area",
+    "floor",
+    "total_floors",
+    "building_year",
+]
+CATEGORICAL_FEATURES = [
+    "district",
+    "listing_kind",
+    "address",
+    "building_type",
+    "individual_heating",
+    "finish_type",
+    "repair_class",
+]
 TARGET = "price"
 
 ALIASES = {
@@ -39,6 +54,18 @@ ALIASES = {
     "этажей": "total_floors",
     "этажей_в_доме": "total_floors",
     "цена": "price",
+    "год_постройки": "building_year",
+    "тип_дома": "building_type",
+    "индивидуальное_отопление": "individual_heating",
+    "отделка": "finish_type",
+    "класс_ремонта": "repair_class",
+    "listingkind": "listing_kind",
+    "totalfloors": "total_floors",
+    "buildingyear": "building_year",
+    "buildingtype": "building_type",
+    "individualheating": "individual_heating",
+    "finishtype": "finish_type",
+    "repairclass": "repair_class",
 }
 
 
@@ -68,20 +95,23 @@ def load_dataset(path: Path) -> pd.DataFrame:
     if path.suffix.lower() == ".json":
         with path.open("r", encoding="utf-8") as source:
             rows = json.load(source)
-        frame = pd.DataFrame(
-            rows,
-            columns=[
-                "listing_id",
-                "address",
-                "district",
-                "listing_kind",
-                "rooms",
-                "area",
-                "floor",
-                "total_floors",
-                "price",
-            ],
-        )
+        if rows and isinstance(rows[0], dict):
+            frame = pd.DataFrame(rows)
+        else:
+            frame = pd.DataFrame(
+                rows,
+                columns=[
+                    "listing_id",
+                    "address",
+                    "district",
+                    "listing_kind",
+                    "rooms",
+                    "area",
+                    "floor",
+                    "total_floors",
+                    "price",
+                ],
+            )
     else:
         frame = pd.read_csv(path)
     frame.columns = [
@@ -98,12 +128,20 @@ def load_dataset(path: Path) -> pd.DataFrame:
     for column in NUMERIC_FEATURES + [TARGET]:
         frame[column] = pd.to_numeric(frame[column], errors="coerce")
 
-    frame["address"] = frame["address"].astype("string").str.strip()
-    frame["district"] = frame["district"].astype("string").str.strip()
-    frame["listing_kind"] = frame["listing_kind"].astype("string").str.strip()
+    frame["individual_heating"] = frame["individual_heating"].map(
+        {True: "Да", False: "Нет"}
+    )
+    for column in CATEGORICAL_FEATURES:
+        values = frame[column].astype("string").str.strip()
+        frame[column] = values.astype(object).where(values.notna(), np.nan)
     frame = frame.dropna(subset=["address", "area", "price"])
     frame = frame[(frame["area"] >= 15) & (frame["area"] <= 300)]
     frame = frame[(frame["price"] >= 500_000) & (frame["price"] <= 100_000_000)]
+    frame.loc[
+        frame["building_year"].notna()
+        & ~frame["building_year"].between(1800, 2035),
+        "building_year",
+    ] = pd.NA
 
     if len(frame) < 25:
         raise ValueError(
@@ -114,11 +152,14 @@ def load_dataset(path: Path) -> pd.DataFrame:
 
 def build_pipeline() -> Pipeline:
     numeric_pipeline = Pipeline(
-        steps=[("imputer", SimpleImputer(strategy="median"))]
+        steps=[("imputer", SimpleImputer(strategy="median", add_indicator=True))]
     )
     categorical_pipeline = Pipeline(
         steps=[
-            ("imputer", SimpleImputer(strategy="most_frequent")),
+            (
+                "imputer",
+                SimpleImputer(strategy="constant", fill_value="Не указано"),
+            ),
             (
                 "onehot",
                 OneHotEncoder(

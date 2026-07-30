@@ -776,24 +776,6 @@ label:focus-within {
   font-size: 10px;
 }
 
-.property-adjustments {
-  padding-top: 22px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.property-adjustments .influence-row {
-  align-items: flex-start;
-}
-
-.property-adjustments .influence-row span {
-  max-width: 58%;
-  line-height: 1.4;
-}
-
-.property-adjustments .influence-row strong {
-  white-space: nowrap;
-}
-
 .positive {
   color: #84e5b3;
 }
