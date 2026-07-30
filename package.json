@@ -1,0 +1,34 @@
+{
+  "name": "kursmetr-kursk-apartment-ml",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ML-сервис для оценки стоимости квартир в Курске",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@11.18.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "node --test tests/*.test.mjs",
+    "check": "pnpm lint && pnpm test && pnpm build",
+    "ml:train": "python ml/train_model.py"
+  },
+  "dependencies": {
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.2.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "4.2.1",
+    "typescript": "5.9.3"
+  }
+}
