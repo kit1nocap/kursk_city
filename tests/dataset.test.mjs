@@ -103,9 +103,7 @@ test("new parameters are ML features without fixed price adjustments", async () 
     "Индивидуальное отопление",
     "Без отделки",
     "White box",
-    "Ремонт бизнес-класса",
-    "Ремонт комфорт-класса",
-    "Ремонт эконом-класса",
+    "Уровень ремонта",
   ];
 
   for (const feature of expectedFeatures) {
@@ -114,5 +112,16 @@ test("new parameters are ML features without fixed price adjustments", async () 
 
   assert.ok(!page.includes("propertyAdjustments"));
   assert.ok(!page.includes("adjustmentRate"));
-  assert.ok(page.includes("Ridge · 28 признаков"));
+  assert.ok(page.includes("Ridge · 26 признаков"));
+  assert.ok(page.includes("Эконом: 1"));
+  assert.ok(page.includes("Комфорт: 2"));
+  assert.ok(page.includes("Бизнес: 3"));
+});
+
+test("area field can be cleared before entering a new value", async () => {
+  const page = await readFile(estimatorPageUrl, "utf8");
+
+  assert.ok(page.includes("const [areaDraft, setAreaDraft]"));
+  assert.ok(page.includes("value={areaDraft}"));
+  assert.ok(page.includes("setAreaDraft(event.target.value)"));
 });

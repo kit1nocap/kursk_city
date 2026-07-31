@@ -113,11 +113,15 @@ const FEATURE_LABELS = [
   "White box",
   "С ремонтом",
   "Отделка не указана",
-  "Ремонт бизнес-класса",
-  "Ремонт комфорт-класса",
-  "Ремонт эконом-класса",
+  "Уровень ремонта",
   "Класс ремонта не указан",
 ];
+
+const REPAIR_LEVELS: Record<RepairClass, number> = {
+  Эконом: 1,
+  Комфорт: 2,
+  Бизнес: 3,
+};
 
 function normalizeAddress(value: string) {
   return value
@@ -155,7 +159,7 @@ function comparableInfo(
   let selected = exact;
   let level: ComparableInfo["level"] = "дом";
 
-  if (selected.length < 2) {
+  if (selected.length < 1) {
     selected = available.filter(
       (row) =>
         row.district === input.district &&
@@ -214,7 +218,7 @@ function featureVector(
     input.individualHeating === null ? 1 : 0,
     ...FINISH_TYPES.map((type) => (finishType === type ? 1 : 0)),
     finishType === null ? 1 : 0,
-    ...REPAIR_CLASSES.map((type) => (repairClass === type ? 1 : 0)),
+    repairClass === null ? 0 : REPAIR_LEVELS[repairClass],
     finishType === "С ремонтом" && repairClass === null ? 1 : 0,
   ];
 }
@@ -262,7 +266,7 @@ function trainModel(rows: KurskListing[]): TrainedModel {
   const trainFeatures = trainRows.map((row) =>
     featureVector(row, trainRows, row.id),
   );
-  const targets = trainRows.map((row) => row.price);
+  const targets = trainRows.map((row) => row.price / row.area);
   const featureCount = trainFeatures[0].length;
 
   const featureMeans = Array.from({ length: featureCount }, (_, index) =>
@@ -281,7 +285,8 @@ function trainModel(rows: KurskListing[]): TrainedModel {
   );
   const targetMean = mean(targets);
   const centeredTargets = targets.map((value) => value - targetMean);
-  const ridgeLambda = 2.4;
+  const baseRidgeLambda = 2.4;
+  const expandedRidgeLambda = 25;
 
   const xtx = Array.from({ length: featureCount }, (_, rowIndex) =>
     Array.from({ length: featureCount }, (_, columnIndex) => {
@@ -289,6 +294,8 @@ function trainModel(rows: KurskListing[]): TrainedModel {
         (sum, row) => sum + row[rowIndex] * row[columnIndex],
         0,
       );
+      const ridgeLambda =
+        rowIndex < 9 ? baseRidgeLambda : expandedRidgeLambda;
       return product + (rowIndex === columnIndex ? ridgeLambda : 0);
     }),
   );
@@ -300,10 +307,12 @@ function trainModel(rows: KurskListing[]): TrainedModel {
     ),
   );
   const weights = solveLinearSystem(xtx, xty);
+  const repairLevelIndex = FEATURE_LABELS.indexOf("Уровень ремонта");
+  weights[repairLevelIndex] = Math.max(0, weights[repairLevelIndex]);
 
-  const predictFromVector = (raw: number[]) =>
+  const predictRateFromVector = (raw: number[]) =>
     Math.max(
-      650_000,
+      30_000,
       targetMean +
         raw.reduce(
           (sum, value, index) =>
@@ -315,7 +324,7 @@ function trainModel(rows: KurskListing[]): TrainedModel {
     );
 
   const testPredictions = testRows.map((row) =>
-    predictFromVector(featureVector(row, trainRows)),
+    predictRateFromVector(featureVector(row, trainRows)) * row.area,
   );
   const testTargets = testRows.map((row) => row.price);
   const errors = testTargets.map(
@@ -341,7 +350,8 @@ function trainModel(rows: KurskListing[]): TrainedModel {
     targetMean,
     residualStd: rmse,
     metrics: { r2, mae, rmse },
-    predict: (input) => predictFromVector(featureVector(input, trainRows)),
+    predict: (input) =>
+      predictRateFromVector(featureVector(input, trainRows)) * input.area,
   };
 }
 
@@ -361,6 +371,7 @@ export default function HomePage() {
   const [form, setForm] = useState<EstimateInput>(INITIAL_INPUT);
   const [estimateInput, setEstimateInput] =
     useState<EstimateInput>(INITIAL_INPUT);
+  const [areaDraft, setAreaDraft] = useState(String(INITIAL_INPUT.area));
   const [addressTouched, setAddressTouched] = useState(false);
 
   const matchingListings = useMemo(() => {
@@ -382,7 +393,8 @@ export default function HomePage() {
     value:
       ((selectedVector[index] - model.featureMeans[index]) /
         model.featureScales[index]) *
-      model.weights[index],
+      model.weights[index] *
+      estimateInput.area,
   }))
     .filter((item) => !item.label.includes("не указан"))
     .sort((left, right) => Math.abs(right.value) - Math.abs(left.value))
@@ -394,6 +406,7 @@ export default function HomePage() {
     const exact = KURSK_LISTINGS.find(
       (row) => normalizeAddress(row.address) === normalizeAddress(address),
     );
+    if (exact) setAreaDraft(String(exact.area));
 
     setForm((current) => ({
       ...current,
@@ -430,7 +443,10 @@ export default function HomePage() {
     event.preventDefault();
     setAddressTouched(true);
     if (!form.address.trim()) return;
-    setEstimateInput({ ...form });
+    const area = numericInput(areaDraft, form.area, 15, 250);
+    setAreaDraft(String(area));
+    setForm((current) => ({ ...current, area }));
+    setEstimateInput({ ...form, area });
   };
 
   return (
@@ -630,7 +646,7 @@ export default function HomePage() {
 
               <div className="field">
                 <label htmlFor="area">
-                  Площадь, м² <span>{form.area}</span>
+                  Площадь, м² <span>{areaDraft || "—"}</span>
                 </label>
                 <input
                   id="area"
@@ -638,13 +654,15 @@ export default function HomePage() {
                   min="15"
                   max="250"
                   step="0.1"
-                  value={form.area}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      area: numericInput(event.target.value, 15, 15, 250),
-                    }))
-                  }
+                  required
+                  value={areaDraft}
+                  onChange={(event) => setAreaDraft(event.target.value)}
+                  onBlur={() => {
+                    if (!areaDraft) return;
+                    const area = numericInput(areaDraft, form.area, 15, 250);
+                    setAreaDraft(String(area));
+                    setForm((current) => ({ ...current, area }));
+                  }}
                 />
               </div>
 
@@ -801,7 +819,7 @@ export default function HomePage() {
             <aside className="result-card" key={estimatedPrice}>
               <div className="result-topline">
                 <span>Оценка модели</span>
-                <span className="result-badge">Ridge · 28 признаков</span>
+                <span className="result-badge">Ridge · 26 признаков</span>
               </div>
               <p className="result-label">Ориентировочная стоимость</p>
               <div className="result-price">{formatPrice(estimatedPrice)}</div>
