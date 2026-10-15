@@ -7,8 +7,6 @@
 
 **Демонстрация:** [kursk-city.vercel.app](https://kursk-city.vercel.app/)
 
-Домен `kurskmetr.online` сейчас не разрешается в DNS. Для просмотра
-работающего приложения используйте адрес Vercel выше.
 
 ![Интерфейс КурсМетра](public/og.png)
 
