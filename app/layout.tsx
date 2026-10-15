@@ -6,7 +6,7 @@ const description =
   "Оценка стоимости квартиры в Курске по адресу и параметрам: встроенный датасет публичных объявлений, ML-модель, метрики и открытые источники.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kurskmetr.online"),
+  metadataBase: new URL("https://kursk-city.vercel.app"),
   title,
   description,
   icons: {
